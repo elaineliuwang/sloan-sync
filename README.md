@@ -1,0 +1,2 @@
+# sloan-sync
+MIT SloanSync

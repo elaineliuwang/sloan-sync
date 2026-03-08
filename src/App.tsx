@@ -21,10 +21,29 @@ type Student = {
   openTo: string[]
 }
 
+const CONVERSATION_TEMPLATES = [
+  {
+    id: 'career-chat',
+    title: 'Career chat',
+    text: 'Hi [Name], I noticed we share an interest in [interest]. I\'d love to learn more about your path and experience. Would you have 15–20 minutes for a quick virtual coffee chat?',
+  },
+  {
+    id: 'mentorship',
+    title: 'Mentorship request',
+    text: 'Hi [Name], I\'m exploring [interest] and would value your perspective as someone further along. Would you be open to a few 1:1 conversations as I figure out my next steps?',
+  },
+  {
+    id: 'collaboration',
+    title: 'Collaboration',
+    text: 'Hi [Name], I saw you\'re interested in [interest]. I\'m working on [project/area] and would love to explore potential collaboration. Interested in connecting?',
+  },
+]
+
 function App() {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('discover')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [requestSentMessage, setRequestSentMessage] = useState(false)
+  const [interestFilter, setInterestFilter] = useState<string>('all')
   const [connections, setConnections] = useState<Connection[]>([
     { id: '1', name: 'Sarah Chen', connectionType: 'Mentorship (ongoing)', status: 'Connected Mar 1, 2026 • Next touchpoint: Mar 15', interests: ['Tech', 'Product Management'], school: 'MIT Sloan' },
     { id: '2', name: 'Marcus Johnson', connectionType: 'Career chat (scheduled)', status: 'Meeting: Mar 10, 1:05 PM', interests: ['Consulting', 'Strategy'], school: 'MIT Sloan' },
@@ -43,9 +62,9 @@ function App() {
     { id: '3', name: 'Priya Patel', program: 'Sloan Fellows', school: 'MIT Sloan', interests: ['Healthcare', 'Operations'], openTo: ['Mentorship'] },
   ]
   const connectedNames = new Set(connections.map((c) => c.name))
-  const gradStudents = allGradStudents.filter((s) => !connectedNames.has(s.name))
+  const gradStudentsUnfiltered = allGradStudents.filter((s) => !connectedNames.has(s.name))
 
-  // Students from other schools - shown when class is fully discovered, matched by similar interests
+  // Students from other schools - shown below in-class, matched by similar interests
   const otherSchoolsStudents: Student[] = [
     { id: 'ext-1', name: 'Alex Rivera', program: 'MBA', school: 'Harvard Business School', interests: ['Tech', 'Product Management', 'Venture Capital'], openTo: ['Career chat', 'Mentorship'] },
     { id: 'ext-2', name: 'Jordan Kim', program: 'MBA', school: 'MIT Sloan (15.761)', interests: ['Consulting', 'Strategy', 'Operations'], openTo: ['Career chat', 'Collaboration'] },
@@ -55,13 +74,35 @@ function App() {
     { id: 'ext-6', name: 'Casey Zhang', program: 'MBA', school: 'Harvard Business School', interests: ['Operations', 'Healthcare'], openTo: ['Career chat'] },
   ]
   const userInterests = new Set(connections.flatMap((c) => c.interests))
-  const suggestedStudents = otherSchoolsStudents
+  const suggestedStudentsUnfiltered = otherSchoolsStudents
     .filter((s) => !connectedNames.has(s.name))
     .map((s) => ({
       ...s,
       matchScore: s.interests.filter((i) => userInterests.has(i)).length,
     }))
     .sort((a, b) => b.matchScore - a.matchScore)
+
+  const allInterests = Array.from(new Set([
+    ...gradStudentsUnfiltered.flatMap((s) => s.interests),
+    ...suggestedStudentsUnfiltered.flatMap((s) => s.interests),
+  ])).sort()
+
+  const filterByInterest = (students: { interests: string[] }[]) =>
+    interestFilter === 'all'
+      ? students
+      : students.filter((s) => s.interests.includes(interestFilter))
+
+  const gradStudents = filterByInterest(gradStudentsUnfiltered)
+  const suggestedStudents = filterByInterest(suggestedStudentsUnfiltered)
+
+  const copyTemplate = (template: typeof CONVERSATION_TEMPLATES[0]) => {
+    let text = template.text
+    if (selectedStudent) {
+      text = text.replace('[Name]', selectedStudent.name.split(' ')[0])
+      text = text.replace('[interest]', selectedStudent.interests[0] ?? 'our shared interests')
+    }
+    navigator.clipboard.writeText(text)
+  }
 
   const handleSubmitRequest = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -143,6 +184,20 @@ function App() {
               <p className="section-description">
                 Find grad students in your course who are open to connecting. Built on shared classroom proximity—low-stakes, intentional networking on shared academic ground.
               </p>
+              <div className="interest-filter">
+                <label htmlFor="interest-filter" className="filter-label">Filter by career interest</label>
+                <select
+                  id="interest-filter"
+                  className="filter-select"
+                  value={interestFilter}
+                  onChange={(e) => setInterestFilter(e.target.value)}
+                >
+                  <option value="all">All interests</option>
+                  {allInterests.map((interest) => (
+                    <option key={interest} value={interest}>{interest}</option>
+                  ))}
+                </select>
+              </div>
               <div className="student-grid">
                 {gradStudents.length > 0 && (
                   <>
@@ -172,19 +227,29 @@ function App() {
                   ))}
                   </>
                 )}
-                {gradStudents.length === 0 && (
+                {gradStudentsUnfiltered.length === 0 && (
                   <div className="discover-empty">
                     <p>You&apos;ve discovered everyone in your class!</p>
                   </div>
                 )}
-                {suggestedStudents.length > 0 && (
+                {gradStudentsUnfiltered.length > 0 && gradStudents.length === 0 && (
+                  <div className="discover-empty">
+                    <p>No one matches &quot;{interestFilter}&quot; in your class. Try another filter.</p>
+                  </div>
+                )}
+                {suggestedStudentsUnfiltered.length > 0 && (
                   <div className="suggestions-section">
                     <h2 className="subsection-title">Suggested connections · Similar interests</h2>
                     <p className="section-description suggestions-intro">
                       People from other MIT Sloan classes, Harvard, Wellesley, and Boston-area schools who share your interests.
                     </p>
                     <div className="student-grid suggestions-grid">
-                      {suggestedStudents.map((student) => (
+                      {suggestedStudents.length === 0 ? (
+                        <div className="discover-empty">
+                          <p>No suggested connections match &quot;{interestFilter}&quot;. Try another filter.</p>
+                        </div>
+                      ) : (
+                      suggestedStudents.map((student) => (
                         <div key={student.id} className="student-card student-card--external">
                           <div className="student-avatar">{student.name.charAt(0)}</div>
                           <div className="student-info">
@@ -206,7 +271,8 @@ function App() {
                             </button>
                           </div>
                         </div>
-                      ))}
+                      ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -314,6 +380,25 @@ function App() {
             <li><span className="stat-value">{connections.length}</span> active connections</li>
             <li><span className="stat-value">{connections.length >= 1 ? 1 : 0}</span> badge earned</li>
           </ul>
+        </div>
+        <div className="sidebar-section">
+          <h3 className="sidebar-title">Guided conversation templates</h3>
+          <p className="sidebar-description">Copy and personalize when reaching out</p>
+          <div className="template-list">
+            {CONVERSATION_TEMPLATES.map((tpl) => (
+              <div key={tpl.id} className="template-card">
+                <h4 className="template-title">{tpl.title}</h4>
+                <p className="template-text">{tpl.text}</p>
+                <button
+                  type="button"
+                  className="template-copy-btn"
+                  onClick={() => copyTemplate(tpl)}
+                >
+                  Copy to clipboard
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="sidebar-section">
           <h3 className="sidebar-title">Incentives</h3>

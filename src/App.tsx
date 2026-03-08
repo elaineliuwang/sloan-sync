@@ -87,7 +87,7 @@ function App() {
     ...suggestedStudentsUnfiltered.flatMap((s) => s.interests),
   ])).sort()
 
-  const filterByInterest = (students: { interests: string[] }[]) =>
+  const filterByInterest = <T extends { interests: string[] }>(students: T[]): T[] =>
     interestFilter === 'all'
       ? students
       : students.filter((s) => s.interests.includes(interestFilter))
@@ -95,11 +95,12 @@ function App() {
   const gradStudents = filterByInterest(gradStudentsUnfiltered)
   const suggestedStudents = filterByInterest(suggestedStudentsUnfiltered)
 
-  const copyTemplate = (template: typeof CONVERSATION_TEMPLATES[0]) => {
+  const copyTemplate = (template: (typeof CONVERSATION_TEMPLATES)[0]) => {
     let text = template.text
     if (selectedStudent) {
-      text = text.replace('[Name]', selectedStudent.name.split(' ')[0])
-      text = text.replace('[interest]', selectedStudent.interests[0] ?? 'our shared interests')
+      const firstName = selectedStudent.name.split(' ')[0] ?? ''
+      const interest = selectedStudent.interests[0] ?? 'our shared interests'
+      text = text.replace('[Name]', firstName).replace('[interest]', interest)
     }
     navigator.clipboard.writeText(text)
   }

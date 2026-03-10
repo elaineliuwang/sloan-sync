@@ -43,6 +43,7 @@ function App() {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('discover')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [requestSentMessage, setRequestSentMessage] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
   const [interestFilter, setInterestFilter] = useState<string>('all')
   const [connections, setConnections] = useState<Connection[]>([
     { id: '1', name: 'Sarah Chen', connectionType: 'Mentorship (ongoing)', status: 'Connected Mar 1, 2026 • Next touchpoint: Mar 15', interests: ['Tech', 'Product Management'], school: 'MIT Sloan' },
@@ -137,7 +138,15 @@ function App() {
     <div className="canvas-layout">
       {/* Course-level left navigation (Canvas style) */}
       <aside className="course-nav">
-        <nav className="course-nav-list">
+        <button
+          type="button"
+          className="mobile-nav-toggle"
+          onClick={() => setNavOpen(!navOpen)}
+        >
+          <span className="hamburger"><span /><span /><span /></span>
+          Course Navigation
+        </button>
+        <nav className={`course-nav-list${navOpen ? '' : ' nav-collapsed'}`}>
           <a href="#" className="course-nav-item">Home</a>
           <a href="#" className="course-nav-item">Student Resources</a>
           <a href="#" className="course-nav-item">Course Overview</a>

@@ -771,36 +771,71 @@
   margin-top: 0.15rem;
 }
 
-/* Responsive: collapse sidebar on smaller screens */
-@media (max-width: 1024px) {
-  .right-sidebar {
-    display: none;
-  }
+/* Mobile nav toggle */
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #333;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #e8e8e8;
+  cursor: pointer;
 }
 
-@media (max-width: 768px) {
+.mobile-nav-toggle .hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mobile-nav-toggle .hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #333;
+  border-radius: 1px;
+}
+
+/* ── Responsive: tablet (≤1024px) ── */
+@media (max-width: 1024px) {
   .canvas-layout {
     flex-direction: column;
   }
 
   .course-nav {
     width: 100%;
+    min-width: unset;
     border-right: none;
     border-bottom: 1px solid #e8e8e8;
-    padding: 1rem;
+    padding: 0;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
   }
 
   .course-nav-list {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: 0;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .course-nav-list.nav-collapsed {
+    display: none;
   }
 
   .course-nav-item {
-    padding: 0.4rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     border-left: none;
     border-bottom: 2px solid transparent;
+    border-radius: 4px;
   }
 
   .course-nav-item.active {
@@ -808,7 +843,118 @@
     border-bottom-color: #a31f34;
   }
 
+  .right-sidebar {
+    width: 100%;
+    min-width: unset;
+    border-left: none;
+    border-top: 1px solid #e8e8e8;
+  }
+
+  .main-content {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .content-body {
+    max-width: 100%;
+  }
+}
+
+/* ── Responsive: mobile (≤640px) ── */
+@media (max-width: 640px) {
   .main-content {
     padding: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .section-description {
+    font-size: 0.9375rem;
+  }
+
+  .workflow-nav {
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .workflow-step {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .student-card {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .student-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 1rem;
+  }
+
+  .student-name {
+    font-size: 1rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+
+  .connect-form {
+    max-width: 100%;
+  }
+
+  .connect-profile-preview {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .connection-card {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .filter-select {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .right-sidebar {
+    padding: 1rem;
+  }
+
+  .template-text {
+    font-size: 0.75rem;
+  }
+
+  .sidebar-title {
+    font-size: 0.9375rem;
+  }
+
+  .journey-flow {
+    font-size: 0.6875rem;
+  }
+
+  .incentives-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-select,
+  .form-textarea {
+    font-size: 1rem;
   }
 }
